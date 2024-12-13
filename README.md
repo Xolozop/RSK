@@ -4,7 +4,7 @@
 
 *тут картинка исходной перестановки и результата*
 
-![Визуализация работы алгоритма(-ов)](https://xolozop.github.io//rsk-visualization/)
+[Визуализация работы алгоритма(-ов)](https://xolozop.github.io//rsk-visualization/)
 
 ## Применение алгоритма RSK
 
