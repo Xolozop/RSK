@@ -5,6 +5,7 @@
 #include "types.h"
 #include "classical.h"
 #include "geometrical.h"
+#include "withlocalrulesRSK.h"
 
 Permutation getRandomPermutation(const Permutation& perm, const size_t n) {
     Permutation newPerm = perm;
@@ -78,18 +79,20 @@ bool isEqual(std::pair<Tableau, Tableau> ans1, std::pair<Tableau, Tableau> ans2)
 }
 
 int main() {
-    size_t n = 1000;
-    /* создаём случайную пеерстановку */
+    /* создаём случайную перестановку */
+    size_t n = 10000;
     Permutation base;
-    for (size_t i = 0; i < n; i++)
-        base.emplace_back(i+1);
+    for (size_t i = 0; i < n; i++) {
+        base.push_back(i+1);
+    }
     Permutation permutation = getRandomPermutation(base, n);
     //Permutation permutation = {3, 1, 6, 10, 2, 5, 8, 4, 9, 7}; // для примера Вьенно
     //Permutation permutation = {6, 1, 7, 2, 5, 8, 3, 9, 4};     // для геометрического примера Вьенно
     //Permutation permutation = {5, 8, 1, 9, 6, 4, 10, 3, 7, 2}; // для примера
-    //Permutation permutation = {8, 7, 9, 6, 2, 10, 1, 3, 4, 5};
+    //Permutation permutation = {7, 5, 1, 2, 6, 4, 3};
+    //Permutation permutation = {4, 2, 1, 5, 3};
 
-    /* быстрый классичесский RSK + вычисление времени */
+    /* классичесский RSK + вычисление времени */
     time_t start, end;
     start = clock();
     std::pair<Tableau, Tableau> classicalAns = classicalRSK(permutation);
@@ -102,21 +105,28 @@ int main() {
     end = clock();
     double geometricalSeconds = (double)(end - start)/CLOCKS_PER_SEC;
 
-    std::cout << "Для перестановки длины n = " << n << std::endl;
-    std::cout << "Затрачено времени на классический RSK: " << std::fixed << classicalSeconds << " секунд" << std::endl;
+    /* с локальными правилами */
+    start = clock();
+    std::pair<Tableau, Tableau> withLocalRulesAns = withLocalRulesRSK(permutation);
+    end = clock();
+    double withLocalRulesSeconds = (double)(end - start)/CLOCKS_PER_SEC;
+
+    std::cout << "Затрачено времени на классический ускоренный RSK: " << std::fixed << classicalSeconds << " секунд" << std::endl;
     std::cout << "Затрачено времени на геометрический RSK: " << std::fixed << geometricalSeconds << " секунд" << std::endl;
-
-    bool equivalence = isEqual(classicalAns, geometricalAns);
-
-    std::cout << "\t~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
-    std::cout << "Полученные разными способами таблицы Юнга ";
-    std::cout << (equivalence ? "эквивалентны!" : "не эквивалентны...") << std::endl;
-
+    std::cout << "Затрачено времени на RSK с локальными правилами на рёбрах: " << std::fixed << withLocalRulesSeconds << " секунд" << std::endl;
+    
     /* запись в файл результата */
     if (n < 1000) {
         writeToFile(permutation, classicalAns, "results/classical.txt");
         writeToFile(permutation, geometricalAns, "results/geometrical.txt");
+        writeToFile(permutation, withLocalRulesAns, "results/local_rules.txt");
     }
-    
+
+    bool equivalence = isEqual(classicalAns, geometricalAns);
+    equivalence *= isEqual(classicalAns, withLocalRulesAns);
+
+    std::cout << "\t~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+    std::cout << "Полученные разными способами таблицы Юнга ";
+    std::cout << (equivalence ? "эквивалентны!" : "не эквивалентны...") << std::endl;
     return 0;
 }
